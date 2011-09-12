@@ -4,10 +4,7 @@ no warnings;
 sub Mo'import {
     import warnings; $^H |= 0x602;
     my $p = caller."'";
-    @{ $p . ISA } = Mo'_;
-    *{ $p . extends } =
-      sub { @{ $p . ISA } = $_[0]; eval "no $_[0] ()" };
-    *{ $p . has } = sub {
+    @_ = ( ISA, extends, has, sub {
         my ( $n, %a ) = @_;
         my $d = $a{default}||$a{builder};
         *{ $p . $n } = $d
@@ -17,7 +14,8 @@ sub Mo'import {
               : ( $_[0]{$n} = $_[0]->$d )
           }
           : sub { $#_ ? $_[0]{$n} = $_[1] : $_[0]{$n} }
-      }
+      }, sub { @{ $p . ISA } = $_[0]; eval "no $_[0] ()" }, [Mo'_]);
+      *{ $p.$_ } = pop for @_;
 }
 
 sub Mo'_'new {
